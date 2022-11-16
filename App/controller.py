@@ -61,6 +61,17 @@ def loadData(catalog,gamesfile,categoryfile):
     
     return catalog
 
+def req1(catalog,floor,ceiling):
+    return model.req1(catalog,floor,ceiling)
+
+def req2(catalog,player):
+    return model.req2(catalog,player)
+
+def req3(catalog,floor,ceiling):
+    return model.req3(catalog,int(floor),int(ceiling))
+
+def bono(catalog,release_year):
+    return model.bono(catalog,release_year)
 # Funciones de ordenamiento
 
 # Funciones de consulta sobre el catálogo
