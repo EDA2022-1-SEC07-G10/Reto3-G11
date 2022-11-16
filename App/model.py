@@ -278,7 +278,7 @@ def newDateRecordEntry(record):
     lt.addLast(entry["lstrecords"],record)
     return entry
 
-def req1(analyzer,floor:str,ceiling:str):
+def req1(analyzer,floor:str,ceiling:str,platform):
 
     INNER_TABLE_HEADERS = ["Total_Runs","Name","Abbreviation","Platforms","Genres"]
     floor = datetime.strptime(floor, '%Y-%m-%d')
@@ -293,11 +293,13 @@ def req1(analyzer,floor:str,ceiling:str):
 
             inside_table = []
             for element in lt.iterator(elements):
-                inside_table.append([element["Total_Runs"],element["Name"],element["Abbreviation"],element["Platforms"],element["Genres"]])
-            tabla_interna = tabulate(inside_table,headers=INNER_TABLE_HEADERS,tablefmt="grid",maxcolwidths=8)
-            principal_table.append([date,count,tabla_interna])
+                if platform in element["Platforms"]:
+                    inside_table.append([element["Total_Runs"],element["Name"],element["Abbreviation"],element["Platforms"],element["Genres"]])
+            if inside_table != []:
+                tabla_interna = tabulate(inside_table,headers=INNER_TABLE_HEADERS,tablefmt="grid",maxcolwidths=8)
+                principal_table.append([date,count,tabla_interna])
     if len(principal_table)>6:principal_table=principal_table[:3]+principal_table[-3:]
-    print(tabulate(principal_table,headers=["Date","Count","Details"],tablefmt="grid",maxcolwidths=[10,6,None]))
+    return(tabulate(principal_table,headers=["Date","Count","Details"],tablefmt="grid",maxcolwidths=[10,6,None]))
 
 def req2(analyzer,player):
     res = (om.get(analyzer["playerRecord"],player)["value"]["lstrecords"])
@@ -314,9 +316,9 @@ def req2(analyzer,player):
         data_para_agregar = ['Unknown' if x == '' else x for x in data_para_agregar]
         table_data.append(data_para_agregar)
     
-    if len(table_data)>6:table_data=table_data[:3]+table_data[-3:]
+    if len(table_data)>5:table_data=table_data[:5]
         
-    print(tabulate(table_data,headers=headers_tabla,tablefmt="grid",maxcolwidths=[10,20,10,10,10,10,10,10,10,10]))
+    return(tabulate(table_data,headers=headers_tabla,tablefmt="grid",maxcolwidths=[10,20,10,10,10,10,10,10,10,10]))
 
 def req3(analyzer,floor,ceiling):
     INNER_TABLE_HEADERS = ["Time_0","Record_Date_0","Name","Players_0","Country_0"
@@ -342,9 +344,9 @@ def req3(analyzer,floor,ceiling):
             principal_table.append([key,count,tabla_interna])
     if len(principal_table) > 6:
         principal_table=principal_table[:3]+principal_table[-3:]
-    print(tabulate(principal_table,headers=["Tries","Count","Details"],tablefmt="grid",maxcolwidths=[8,6,None]))
+    return (tabulate(principal_table,headers=["Tries","Count","Details"],tablefmt="grid",maxcolwidths=[8,6,None]))
             
-def bono(analyzer,release_year):
+def bono(analyzer,release_year,floor,ceiling):
 #    print(om.keySet(analyzer["countriesRecord"]))
     var=0
     locator = Nominatim(user_agent="myGeocoder")
@@ -359,13 +361,14 @@ def bono(analyzer,release_year):
                 records = om.get(analyzer["records"],element["Game_Id"])["value"]#Saca los records de los juegos que cumplen la condicion
                 
                 for record in lt.iterator(records):
-                    countries = record["Country_0"].split(",")
-                    for country in countries:
-                        country = country.strip()
+                    if record["Time_0"]>floor and record["Time_0"]<ceiling:
+                        countries = record["Country_0"].split(",")
+                        for country in countries:
+                            country = country.strip()
 
-                        loc = locator.geocode(country)
-                        
-                        mc.add_child(folium.Marker(location=[loc.latitude,loc.longitude],popup=record["Country_0"]))
+                            loc = locator.geocode(country)
+                            
+                            mc.add_child(folium.Marker(location=[loc.latitude,loc.longitude],popup=record["Country_0"]))
     m.add_child(mc)
     m.save("./map.html")
     os.system("start map.html")

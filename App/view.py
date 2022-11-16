@@ -23,6 +23,7 @@
 import config as cf
 import sys
 import controller
+import time
 from DISClib.ADT import list as lt
 assert cf
 
@@ -37,8 +38,8 @@ operación solicitada
 default_limit = 1000
 sys.setrecursionlimit(default_limit*10)
 
-gamefile = "Speedruns//game_data_utf-8-small.csv"
-categoryfile = "Speedruns//category_data_urf-8-small.csv"
+gamefile = "Speedruns//game_data_utf-8-50pct.csv"
+categoryfile = "Speedruns//category_data_urf-8-50pct.csv"
 
 catalog = None
 
@@ -69,19 +70,35 @@ while True:
         print("\nInformacion cargada exitosamente\n")
 
     elif int(inputs[0]) == 2:
+        start_time = time.process_time()
         print("Ejecutando requerimiento 1")
         floor = input("Escriba la fecha inicial: ")
         ceiling = input("Escriba la fecha final: ")
-        controller.req1(catalog,floor,ceiling)
+        platform = input("Escriba la plataforma: ")
+        resultado = controller.req1(catalog,floor,ceiling,platform)
+        print(resultado)
+        stop_time = time.process_time() 
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print("El tiempo usado completo fue"+str(elapsed_time_mseg))
     elif int(inputs[0]) == 3:
+        start_time = time.process_time()
         print("Ejecutando requerimiento 2")
         player = input("Escriba el nombre del jugador: ")
-        controller.req2(catalog,player)
+        resultado = controller.req2(catalog,player)
+        print(resultado)
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print("El tiempo usado completo fue"+str(elapsed_time_mseg))
     elif int(inputs[0]) == 4:
+        start_time = time.process_time()
         print("Ejecutando requerimiento 3")
         floor = input("Escriba el numero menor de intentos: ")
         ceiling = input("Escriba el numero mayor de intentos: ")
-        controller.req3(catalog,floor,ceiling)
+        resultado = controller.req3(catalog,floor,ceiling)
+        print(resultado)
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print("El tiempo usado completo fue"+str(elapsed_time_mseg))
     elif int(inputs[0]) == 5:
         pass
     elif int(inputs[0]) == 6:
@@ -91,9 +108,15 @@ while True:
     elif int(inputs[0]) == 8:
         pass
     elif int(inputs[0]) == 9:
+        start_time = time.process_time()
         print("Ejecutando requerimiento 8 - bono")
+        floor = input("Escriba el tiempo menor: ")
+        ceiling = input("Escriba el tiempo mayor: ")
         release_year = input("Ingresa el anio a buscar: ")
-        controller.bono(catalog,release_year)
+        controller.bono(catalog,release_year,floor,ceiling)
+        stop_time = time.process_time()
+        elapsed_time_mseg = (stop_time - start_time)*1000
+        print("El tiempo usado completo fue"+str(elapsed_time_mseg))
     elif int(inputs[0])==0:
         controller.pruebas(catalog)
     else:
