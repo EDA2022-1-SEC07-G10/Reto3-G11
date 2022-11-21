@@ -39,7 +39,7 @@ default_limit = 1000
 sys.setrecursionlimit(default_limit*10)
 
 gamefile = "Speedruns//game_data_utf-8-50pct.csv"
-categoryfile = "Speedruns//category_data_urf-8-50pct.csv"
+categoryfile = "Speedruns//category_data_utf-8-50pct.csv"
 
 catalog = None
 
@@ -101,8 +101,13 @@ while True:
         print("El tiempo usado completo fue"+str(elapsed_time_mseg))
     elif int(inputs[0]) == 5:
         pass
+
     elif int(inputs[0]) == 6:
-        pass
+        inferior = input("Escriba el numero menor de intentos: ")
+        superior= input("Escriba el numero mayor de intentos: ")
+        resultado =controller.req5(catalog, inferior, superior)
+        print(resultado)
+
     elif int(inputs[0]) == 7:
         pass
     elif int(inputs[0]) == 8:

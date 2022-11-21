@@ -70,6 +70,9 @@ def req2(catalog,player):
 def req3(catalog,floor,ceiling):
     return model.req3(catalog,int(floor),int(ceiling))
 
+def req5(catalog, inferior, superior):
+    return model.req5(catalog, inferior, superior)
+
 def bono(catalog,release_year,floor,ceiling):
     return model.bono(catalog,release_year,floor,ceiling)
 # Funciones de ordenamiento

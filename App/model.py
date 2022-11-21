@@ -30,6 +30,7 @@ import folium
 from folium.plugins import MarkerCluster
 from geopy.geocoders import Nominatim
 import os
+from DISClib.Algorithms.Sorting import quicksort as quick
 from tabulate import tabulate
 """
 En este archivo definimos los TADs que vamos a usar,
@@ -61,7 +62,8 @@ def newAnalyzer():
                 "dateRecord":om.newMap('RBT',comparefunction=compareDates),
                 "playerRecord":om.newMap('RBT',comparefunction=comparePlayers),
                 "triesRecord":om.newMap('RBT',comparefunction=compareTries),
-                "countriesRecord":om.newMap('RBT',comparefunction=compareCountries)
+                "countriesRecord":om.newMap('RBT',comparefunction=compareCountries),
+                "tiempo":om.newMap('RBT',comparefunction=comparefloats)
                 }
     return analyzer
 
@@ -83,6 +85,7 @@ def addRecord(analyzer,record):
     updateRecordDate(analyzer["dateRecord"],record)
     updatePlayerRecord(analyzer["playerRecord"],record)
     updateCountriesRecord(analyzer["countriesRecord"],record)
+    updateTiempo0(analyzer["tiempo"],record)
     return analyzer
 
 
@@ -156,6 +159,17 @@ def updateCountriesRecord(map,record):
     
     return map
 
+def updateTiempo0(map,record):
+    times = record["Time_0"]
+    recordEntry = om.get(map, float(record["Time_0"]))
+    if (recordEntry is None):
+        ltTimes= lt.newList('SINGLE_LINKED')
+        lt.addLast(ltTimes, record)
+        om.put(map, float(times), ltTimes)
+    else:
+        entry = me.getValue(recordEntry)
+        lt.addLast(entry, record)
+        om.put(map, float(times), entry)
 
 def addDateGameIndex(dateEntry,game):
     lst = dateEntry["lstgames"]
@@ -345,7 +359,57 @@ def req3(analyzer,floor,ceiling):
     if len(principal_table) > 6:
         principal_table=principal_table[:3]+principal_table[-3:]
     return (tabulate(principal_table,headers=["Tries","Count","Details"],tablefmt="grid",maxcolwidths=[8,6,None]))
-            
+
+def ordenarReq5(a1, a2):
+    #a = datetime.strptime(a1["Record_Date_0"], "%Y-%m-%dT%H:%S:%fZ")
+    #b = datetime.strptime(a2["Record_Date_0"], "%Y-%m-%dT%H:%S:%fZ")
+    #print(a)
+    #b = datetime.strftime(a, "%Y-%m-%d")
+
+    dateA1 = float(a1["Time_0"])
+    dateA2 = float(a2["Time_0"])
+    runsA1 = float(a1["Num_Runs"])
+    runsA2 = float(a2["Num_Runs"] )
+
+    if dateA1  == dateA2 :
+        if runsA1 == runsA2:
+            return a1["Name"] < a2["Name"] 
+        return runsA1 == runsA2
+    return dateA1  < dateA2
+
+
+def req5(analyzer, inferior, superior):
+    INNER_TABLE_HEADERS = ["Time_0","Record_Date_0","Name","Num_Runs","Players_0","Genres","Release_Date", "Subcategory","Category"]
+
+    principal_table = []
+    elements = om.values(analyzer["tiempo"], float(inferior), float(superior))
+    count = lt.size(elements)
+    ltReq5 = lt.newList("ARRAY_LIST")
+    for element in lt.iterator(elements):
+        value = element["first"]["info"]
+        lt.addLast(ltReq5, value)
+    quick.sort(ltReq5, ordenarReq5)
+    inf= lt.subList(ltReq5,1,3)
+    sup= lt.subList(ltReq5,count-2,3)
+    for element in lt.iterator(sup):
+        lt.addLast(inf, element)
+    inside_table = []
+    for element in lt.iterator(inf):
+        
+        id = element["Game_Id"] 
+        game_info = m.get(analyzer["games"],id)["value"]
+        game_name = game_info["Name"]
+        platforms = game_info["Platforms"]
+        genres = game_info["Genres"]
+        release_date = game_info["Release_Date"]
+        inside_table.append([element["Time_0"],element["Record_Date_0"],game_name,element["Num_Runs"], element["Players_0"],genres,release_date,element["Subcategory"],element["Category"]])
+    tabla_interna = tabulate(inside_table,headers=INNER_TABLE_HEADERS,tablefmt="grid")
+    principal_table.append([count,tabla_interna])
+   
+
+    return (tabulate(principal_table,headers=["Count","Details"],tablefmt="grid"))
+
+
 def bono(analyzer,release_year,floor,ceiling):
 #    print(om.keySet(analyzer["countriesRecord"]))
     var=0
@@ -417,3 +481,11 @@ def compareCountries(country1, country2):
     else:
         return -1
 
+def comparefloats(tiempo1, tiempo2):
+   
+    if (float(tiempo1) == float(tiempo2)):
+        return 0
+    elif (float(tiempo1) > float(tiempo2)):
+        return 1
+    else:
+        return -1
